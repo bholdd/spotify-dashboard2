@@ -115,35 +115,52 @@ class SpotifyWidget:
         self.config_file = "widget_config.json"
         self.settings = self.load_settings()
         
-        # Initialize variables
+        # Initialize variables FIRST
         self.sp_client = None
         self.sp_api = None
         self.current_time_range = "medium_term"
         self.current_tab = "artists"
-        self.current_palette = self.settings.get("palette", "dark")
-        self.transparency = self.settings.get("transparency", 100)
+        self.drag_data = {"x": 0, "y": 0}
+        self.dragging_enabled = True
         self.loading = False
         self.artists_data = []
         self.tracks_data = []
         self.settings_open = False
         self.demo_mode = False
         
-        # Configure styles
+        # Settings
+        self.config_file = "widget_config.json"
+        self.settings = self.load_settings()
+        
+        self.current_palette = self.settings.get("palette", "dark")
+        self.transparency = self.settings.get("transparency", 100)
+        
+        # Configure styles BEFORE creating widgets
         self.setup_styles()
         
-        # Apply transparency
-        self.apply_transparency()
+        # Set window properties
+        self.root.geometry("320x380")
+        self.root.resizable(False, False)
+        self.root.configure(bg=self.bg_color)
         
-        # Create UI first
+        # Create UI
+        print("Creating UI...")
         self.create_ui()
         
         # Make window draggable
         self.setup_drag()
         
-        # Position window
+        # Position and show window
         self.load_window_position()
+        self.root.lift()
+        self.root.attributes('-topmost', True)
+        self.root.after_idle(self.root.attributes, '-topmost', False)
+        
+        # Apply transparency
+        self.apply_transparency()
         
         # Load demo data immediately
+        print("Loading demo data...")
         self.demo_mode = True
         self.artists_data = self.DEMO_ARTISTS
         self.tracks_data = self.DEMO_TRACKS
@@ -190,11 +207,11 @@ class SpotifyWidget:
         if self.settings.get("x") and self.settings.get("y"):
             self.root.geometry(f"+{self.settings['x']}+{self.settings['y']}")
         else:
-            # Default to bottom right corner
+            # Default to center of screen
             screen_width = self.root.winfo_screenwidth()
             screen_height = self.root.winfo_screenheight()
-            x = screen_width - 340
-            y = screen_height - 410
+            x = (screen_width - 320) // 2
+            y = (screen_height - 380) // 2
             self.root.geometry(f"+{x}+{y}")
 
     def apply_transparency(self):
@@ -212,14 +229,6 @@ class SpotifyWidget:
         self.fg_color = self.palette["fg"]
         self.accent_color = self.palette["accent"]
         self.text_secondary = self.palette["text_secondary"]
-        
-        self.root.configure(bg=self.bg_color)
-        
-        # Configure ttk style
-        style = ttk.Style()
-        style.theme_use('clam')
-        style.configure('TNotebook', background=self.bg_color, borderwidth=0)
-        style.configure('TNotebook.Tab', padding=[12, 6])
 
     def create_ui(self):
         """Create the widget UI"""
@@ -513,6 +522,7 @@ class SpotifyWidget:
         for widget in self.root.winfo_children():
             widget.destroy()
         
+        self.root.configure(bg=self.bg_color)
         self.create_ui()
         
         # Reopen settings
@@ -741,14 +751,13 @@ class SpotifyWidget:
 
 def main():
     """Main entry point"""
+    print("Creating root window...")
     root = tk.Tk()
-    root.configure(bg="#0F0F0F")
-    root.resizable(False, False)
     
-    print("Starting widget...")
+    print("Creating SpotifyWidget...")
     app = SpotifyWidget(root)
-    print("Widget created, showing window...")
-    root.deiconify()
+    
+    print("Starting mainloop...")
     root.mainloop()
     
     # Save settings on close
