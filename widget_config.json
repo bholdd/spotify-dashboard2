@@ -1,8 +1,8 @@
 {
-  "transparency": 100,
+  "palette": "cozy_earth",
+  "x": 1528,
+  "y": 619,
   "drop_shadow": false,
   "width": 380,
-  "height": 450,
-  "x": null,
-  "y": null
+  "height": 450
 }

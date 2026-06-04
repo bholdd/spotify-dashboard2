@@ -4,14 +4,15 @@ Modern minimal desktop widget for displaying top Spotify artists and songs
 """
 
 import tkinter as tk
-from tkinter import ttk
 import threading
 import json
 import os
 import traceback
 import sys
-import math
+from io import BytesIO
 
+import requests
+from PIL import Image, ImageTk
 from spotify_auth import SpotifyAuthenticator
 from spotify_api import SpotifyAPI
 
@@ -21,45 +22,41 @@ class SpotifyWidget:
 
     # Color palettes
     PALETTES = {
-        "dark": {
-            "bg": "#0F0F0F",
-            "secondary_bg": "#1a1a1a",
-            "tertiary_bg": "#252525",
-            "fg": "#FFFFFF",
-            "accent": "#1DB954",
-            "text_secondary": "#B3B3B3"
+        "cozy_earth": {
+            "name": "Cozy Earth",
+            "bg": "#CB997E",
+            "secondary_bg": "#DDBEA9",
+            "tertiary_bg": "#FFE8D6",
+            "fg": "#1A1A1A",
+            "accent": "#CB997E",
+            "text_secondary": "#5C4B43"
         },
-        "purple": {
-            "bg": "#0a0a0f",
-            "secondary_bg": "#1a1517",
-            "tertiary_bg": "#2d1f3a",
-            "fg": "#FFFFFF",
-            "accent": "#a855f7",
-            "text_secondary": "#b4a8c4"
+        "moonlit_ocean": {
+            "name": "Moonlit Ocean",
+            "bg": "#2B2D42",
+            "secondary_bg": "#8D99AE",
+            "tertiary_bg": "#EDF2F4",
+            "fg": "#101218",
+            "accent": "#2B2D42",
+            "text_secondary": "#4C5668"
         },
-        "blue": {
-            "bg": "#0f0f1a",
-            "secondary_bg": "#1a1f2e",
-            "tertiary_bg": "#252f45",
-            "fg": "#FFFFFF",
-            "accent": "#3b82f6",
-            "text_secondary": "#a3b8d6"
+        "sunny_peach": {
+            "name": "Sunny Peach",
+            "bg": "#ED6A5A",
+            "secondary_bg": "#F4F1BB",
+            "tertiary_bg": "#9BC1BC",
+            "fg": "#111111",
+            "accent": "#ED6A5A",
+            "text_secondary": "#334A47"
         },
-        "pink": {
-            "bg": "#14080a",
-            "secondary_bg": "#2d1b22",
-            "tertiary_bg": "#3f2833",
+        "fiery_arctic": {
+            "name": "Fiery Arctic",
+            "bg": "#F6F7EB",
+            "secondary_bg": "#E94F37",
+            "tertiary_bg": "#393E41",
             "fg": "#FFFFFF",
-            "accent": "#ec4899",
-            "text_secondary": "#d4a5b2"
-        },
-        "teal": {
-            "bg": "#081f1f",
-            "secondary_bg": "#0f3838",
-            "tertiary_bg": "#1a5555",
-            "fg": "#FFFFFF",
-            "accent": "#14b8a6",
-            "text_secondary": "#7dd3c0"
+            "accent": "#E94F37",
+            "text_secondary": "#DDE2E4"
         }
     }
 
@@ -106,9 +103,9 @@ class SpotifyWidget:
         self.widget_width = 360
         self.widget_height = 360
         self.visible_rows = 5
-        self.row_height = 48
-        self.control_height = 58
-        self.content_height = self.visible_rows * self.row_height
+        self.row_height = 60
+        self.control_height = 60
+        self.content_height = self.widget_height - self.control_height
         self.root.geometry(f"{self.widget_width}x{self.widget_height}")
         self.root.resizable(False, False)
         
@@ -135,21 +132,23 @@ class SpotifyWidget:
         self.tracks_data = []
         self.settings_open = False
         self.demo_mode = False
+        self.image_cache = {}
+        self.item_images = []
         
         # Settings
         self.config_file = "widget_config.json"
         self.settings = self.load_settings()
         
-        self.current_palette = self.settings.get("palette", "dark")
-        self.transparency = self.settings.get("transparency", 100)
-        
+        self.current_palette = self.settings.get("palette", "cozy_earth")
+        if self.current_palette not in self.PALETTES:
+            self.current_palette = "cozy_earth"
         # Configure styles BEFORE creating widgets
         self.setup_styles()
         
         # Set window properties
         self.root.geometry(f"{self.widget_width}x{self.widget_height}")
         self.root.resizable(False, False)
-        self.root.configure(bg=self.bg_color)
+        self.root.configure(bg=self.panel_bg)
         self.enable_rounded_corners()
         
         # Create UI
@@ -161,12 +160,13 @@ class SpotifyWidget:
         
         # Position and show window
         self.load_window_position()
+        self.root.after(50, self.load_window_position)
         self.root.lift()
         self.root.attributes('-topmost', True)
         self.root.after_idle(self.root.attributes, '-topmost', False)
         
-        # Apply transparency
-        self.apply_transparency()
+        # Apply saved colors
+        self.apply_theme_colors()
         
         # Load demo data immediately
         print("Loading demo data...")
@@ -182,28 +182,31 @@ class SpotifyWidget:
         # self.authenticate()
 
     def enable_rounded_corners(self):
-        """Clip the borderless window into a rounded, slightly bowed panel."""
+        """Clip the borderless window into a rounded square panel."""
         if sys.platform != "win32":
             return
 
         try:
             import ctypes
 
-            hwnd = self.root.winfo_id()
-
-            class POINT(ctypes.Structure):
-                _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
-
-            points = self.fisheye_region_points()
-            point_array = (POINT * len(points))(*[POINT(x, y) for x, y in points])
-            region = ctypes.windll.gdi32.CreatePolygonRgn(point_array, len(points), 1)
-            ctypes.windll.user32.SetWindowRgn(hwnd, region, True)
+            corner_radius = 24
+            for hwnd in (self.root.winfo_id(), ctypes.windll.user32.GetParent(self.root.winfo_id())):
+                if hwnd:
+                    region = ctypes.windll.gdi32.CreateRoundRectRgn(
+                        0,
+                        0,
+                        self.widget_width + 1,
+                        self.widget_height + 1,
+                        corner_radius,
+                        corner_radius
+                    )
+                    ctypes.windll.user32.SetWindowRgn(hwnd, region, True)
 
             DWMWA_WINDOW_CORNER_PREFERENCE = 33
             DWMWCP_ROUND = 2
             preference = ctypes.c_int(DWMWCP_ROUND)
             ctypes.windll.dwmapi.DwmSetWindowAttribute(
-                hwnd,
+                self.root.winfo_id(),
                 DWMWA_WINDOW_CORNER_PREFERENCE,
                 ctypes.byref(preference),
                 ctypes.sizeof(preference)
@@ -211,73 +214,10 @@ class SpotifyWidget:
         except Exception:
             pass
 
-    def fisheye_region_points(self):
-        """Build a rounded outline with a subtle fish-eye bulge."""
-        width = self.widget_width
-        height = self.widget_height
-        radius = 32
-        inset = 16
-        points = []
-
-        for i in range(12):
-            t = i / 11
-            x = int(inset + radius + t * (width - 2 * (inset + radius)))
-            y = int(3 + 9 * math.sin(math.pi * t))
-            points.append((x, y))
-
-        for i in range(9):
-            angle = math.radians(-90 + (i / 8) * 90)
-            points.append((
-                int(width - inset - radius + radius * math.cos(angle)),
-                int(radius + radius * math.sin(angle))
-            ))
-
-        for i in range(14):
-            t = i / 13
-            y = int(radius + t * (height - 2 * radius))
-            bow = int(12 * math.sin(math.pi * t))
-            points.append((width - inset + bow, y))
-
-        for i in range(9):
-            angle = math.radians((i / 8) * 90)
-            points.append((
-                int(width - inset - radius + radius * math.cos(angle)),
-                int(height - radius + radius * math.sin(angle))
-            ))
-
-        for i in range(12):
-            t = i / 11
-            x = int(width - inset - radius - t * (width - 2 * (inset + radius)))
-            y = int(height - 3 - 9 * math.sin(math.pi * t))
-            points.append((x, y))
-
-        for i in range(9):
-            angle = math.radians(90 + (i / 8) * 90)
-            points.append((
-                int(inset + radius + radius * math.cos(angle)),
-                int(height - radius + radius * math.sin(angle))
-            ))
-
-        for i in range(14):
-            t = i / 13
-            y = int(height - radius - t * (height - 2 * radius))
-            bow = int(12 * math.sin(math.pi * t))
-            points.append((inset - bow, y))
-
-        for i in range(9):
-            angle = math.radians(180 + (i / 8) * 90)
-            points.append((
-                int(inset + radius + radius * math.cos(angle)),
-                int(radius + radius * math.sin(angle))
-            ))
-
-        return points
-
     def load_settings(self):
         """Load widget settings from config file"""
         default_settings = {
-            "palette": "dark",
-            "transparency": 100,
+            "palette": "cozy_earth",
             "x": None,
             "y": None
         }
@@ -288,9 +228,6 @@ class SpotifyWidget:
                     loaded_settings = json.load(f)
                     default_settings.update(loaded_settings)
 
-                    if isinstance(default_settings.get("transparency"), bool):
-                        default_settings["transparency"] = 100
-
                     return default_settings
             except:
                 return default_settings
@@ -300,7 +237,6 @@ class SpotifyWidget:
     def save_settings(self):
         """Save widget settings to config file"""
         self.settings["palette"] = self.current_palette
-        self.settings["transparency"] = self.transparency
         self.settings["x"] = self.root.winfo_x()
         self.settings["y"] = self.root.winfo_y()
         
@@ -308,23 +244,18 @@ class SpotifyWidget:
             json.dump(self.settings, f, indent=2)
 
     def load_window_position(self):
-        """Load saved window position or default to bottom right"""
+        """Default to bottom right of the screen."""
         self.root.update_idletasks()
-        
-        if self.settings.get("x") and self.settings.get("y"):
-            self.root.geometry(f"+{self.settings['x']}+{self.settings['y']}")
-        else:
-            # Default to bottom right of the screen.
-            screen_width = self.root.winfo_screenwidth()
-            screen_height = self.root.winfo_screenheight()
-            x = screen_width - self.widget_width - 24
-            y = screen_height - self.widget_height - 64
-            self.root.geometry(f"+{x}+{y}")
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = screen_width - self.widget_width - 24
+        y = screen_height - self.widget_height - 64
+        self.root.geometry(f"{self.widget_width}x{self.widget_height}+{x}+{y}")
 
-    def apply_transparency(self):
-        """Apply opacity to the retro background only."""
+    def apply_theme_colors(self):
+        """Refresh widget colors after settings change."""
         self.setup_styles()
-        self.draw_pixel_background()
+        self.update_background_colors()
 
     def setup_styles(self):
         """Setup custom styles for the widget"""
@@ -336,97 +267,36 @@ class SpotifyWidget:
         self.fg_color = self.palette["fg"]
         self.accent_color = self.palette["accent"]
         self.text_secondary = self.palette["text_secondary"]
-        self.panel_bg = self.blend_color(self.bg_color, "#000000", self.transparency / 100.0)
-        self.panel_alt_bg = self.blend_color(self.secondary_bg, "#050505", self.transparency / 100.0)
+        self.panel_bg = self.bg_color
 
-    def blend_color(self, foreground, background, amount):
-        amount = max(0, min(1, amount))
-        fg = tuple(int(foreground[i:i + 2], 16) for i in (1, 3, 5))
-        bg = tuple(int(background[i:i + 2], 16) for i in (1, 3, 5))
-        mixed = tuple(int(bg[i] + (fg[i] - bg[i]) * amount) for i in range(3))
-        return f"#{mixed[0]:02x}{mixed[1]:02x}{mixed[2]:02x}"
+    def update_background_colors(self):
+        for attr in ("main_frame", "content_settings_frame"):
+            if hasattr(self, attr):
+                getattr(self, attr).configure(bg=self.panel_bg)
 
-    def draw_pixel_background(self):
-        if not hasattr(self, "background_canvas"):
-            return
-
-        self.background_canvas.configure(bg=self.panel_bg)
-        self.background_canvas.delete("checker")
-        tile = 24
-
-        for y in range(0, self.widget_height, tile):
-            for x in range(0, self.widget_width, tile):
-                color = self.panel_bg if ((x // tile) + (y // tile)) % 2 == 0 else self.panel_alt_bg
-                self.background_canvas.create_rectangle(
-                    x,
-                    y,
-                    x + tile,
-                    y + tile,
-                    fill=color,
-                    outline=color,
-                    tags="checker"
-                )
-
-        self.background_canvas.lower("checker")
-
-        for canvas_name in ("artists_canvas", "songs_canvas"):
-            if hasattr(self, canvas_name):
-                self.draw_canvas_checker(getattr(self, canvas_name), self.widget_width - 46, self.content_height)
-
-    def draw_canvas_checker(self, canvas, width, height):
-        canvas.configure(bg=self.panel_bg)
-        canvas.delete("checker")
-        tile = 24
-
-        for y in range(0, height + tile, tile):
-            for x in range(0, width + tile, tile):
-                color = self.panel_bg if ((x // tile) + (y // tile)) % 2 == 0 else self.panel_alt_bg
-                canvas.create_rectangle(
-                    x,
-                    y,
-                    x + tile,
-                    y + tile,
-                    fill=color,
-                    outline=color,
-                    tags="checker"
-                )
-
-        canvas.lower("checker")
+        for attr in ("content_frame", "artists_canvas", "artists_content", "songs_canvas", "songs_content"):
+            if hasattr(self, attr):
+                getattr(self, attr).configure(bg=self.tertiary_bg)
 
     def create_ui(self):
         """Create the widget UI"""
-        self.background_canvas = tk.Canvas(
-            self.root,
-            bg=self.panel_bg,
-            highlightthickness=0,
-            borderwidth=0
-        )
-        self.background_canvas.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
-        self.draw_pixel_background()
-
-        main_frame = tk.Frame(self.background_canvas, bg=self.panel_bg)
-        self.background_canvas.create_window(
-            (18, 18),
-            window=main_frame,
-            anchor=tk.NW,
-            width=self.widget_width - 36,
-            height=self.widget_height - 36
-        )
+        main_frame = tk.Frame(self.root, bg=self.panel_bg)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
         self.main_frame = main_frame
 
         self.content_settings_frame = tk.Frame(main_frame, bg=self.panel_bg)
         self.content_settings_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
 
-        self.content_frame = tk.Frame(self.content_settings_frame, bg=self.panel_bg)
-        self.content_frame.pack(fill=tk.BOTH, expand=False, padx=0, pady=0)
+        self.content_frame = tk.Frame(self.content_settings_frame, bg=self.tertiary_bg)
+        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
         self.content_frame.configure(height=self.content_height)
         self.content_frame.pack_propagate(False)
 
         self.control_frame = tk.Frame(main_frame, bg=self.secondary_bg)
-        self.control_frame.pack(fill=tk.X, side=tk.BOTTOM, pady=(8, 0))
+        self.control_frame.pack(fill=tk.X, side=tk.BOTTOM, pady=0)
 
         buttons_frame = tk.Frame(self.control_frame, bg=self.secondary_bg)
-        buttons_frame.pack(fill=tk.X, padx=5, pady=5)
+        buttons_frame.pack(fill=tk.X, padx=6, pady=6)
 
         self.tab_buttons = {}
         for label, tab_name in [("Artists", "artists"), ("Songs", "songs")]:
@@ -459,50 +329,32 @@ class SpotifyWidget:
 
         self.artists_canvas = tk.Canvas(
             self.content_frame,
-            bg=self.panel_bg,
+            bg=self.tertiary_bg,
             highlightthickness=0,
             borderwidth=0
         )
         self.artists_canvas.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
 
-        artists_scroll = ttk.Scrollbar(
-            self.content_frame,
-            orient=tk.VERTICAL,
-            command=self.artists_canvas.yview
-        )
-        artists_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-
-        self.artists_canvas.config(yscrollcommand=artists_scroll.set)
-        self.artists_content = tk.Frame(self.artists_canvas, bg=self.panel_bg)
-        self.artists_canvas.create_window((0, 0), window=self.artists_content, anchor=tk.NW, width=self.widget_width - 46)
-        self.draw_canvas_checker(self.artists_canvas, self.widget_width - 46, self.content_height)
+        self.artists_content = tk.Frame(self.artists_canvas, bg=self.tertiary_bg)
+        self.artists_canvas.create_window((0, 0), window=self.artists_content, anchor=tk.NW, width=self.widget_width)
 
         self.songs_canvas = tk.Canvas(
             self.content_frame,
-            bg=self.panel_bg,
+            bg=self.tertiary_bg,
             highlightthickness=0,
             borderwidth=0
         )
 
-        songs_scroll = ttk.Scrollbar(
-            self.content_frame,
-            orient=tk.VERTICAL,
-            command=self.songs_canvas.yview
-        )
-
-        self.songs_canvas.config(yscrollcommand=songs_scroll.set)
-        self.songs_content = tk.Frame(self.songs_canvas, bg=self.panel_bg)
-        self.songs_canvas.create_window((0, 0), window=self.songs_content, anchor=tk.NW, width=self.widget_width - 46)
-        self.draw_canvas_checker(self.songs_canvas, self.widget_width - 46, self.content_height)
+        self.songs_content = tk.Frame(self.songs_canvas, bg=self.tertiary_bg)
+        self.songs_canvas.create_window((0, 0), window=self.songs_content, anchor=tk.NW, width=self.widget_width)
 
         self.canvases = {
-            "artists": (self.artists_canvas, self.artists_content, artists_scroll),
-            "songs": (self.songs_canvas, self.songs_content, songs_scroll)
+            "artists": (self.artists_canvas, self.artists_content),
+            "songs": (self.songs_canvas, self.songs_content)
         }
 
         self.root.bind_all("<MouseWheel>", self._on_mousewheel)
         self.artists_canvas.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
-        artists_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.settings_frame = tk.Frame(self.content_settings_frame, bg=self.secondary_bg)
 
@@ -517,7 +369,7 @@ class SpotifyWidget:
             command=command,
             relief=tk.RAISED,
             padx=4,
-            pady=5,
+            pady=6,
             activebackground=self.tertiary_bg,
             activeforeground=self.fg_color
         )
@@ -565,34 +417,6 @@ class SpotifyWidget:
         )
         title_label.pack(pady=8)
         
-        # Transparency section
-        transparency_label = tk.Label(
-            self.settings_frame,
-            text="Opacity",
-            font=("Segoe UI", 8),
-            bg=self.secondary_bg,
-            fg=self.text_secondary
-        )
-        transparency_label.pack(anchor=tk.W, padx=15, pady=(6, 2))
-        
-        transparency_frame = tk.Frame(self.settings_frame, bg=self.secondary_bg)
-        transparency_frame.pack(fill=tk.X, padx=15, pady=(0, 8))
-        
-        self.transparency_slider = tk.Scale(
-            transparency_frame,
-            from_=0,
-            to=100,
-            orient=tk.HORIZONTAL,
-            bg=self.tertiary_bg,
-            fg=self.accent_color,
-            troughcolor=self.secondary_bg,
-            highlightthickness=0,
-            command=self.change_transparency,
-            length=280
-        )
-        self.transparency_slider.set(self.transparency)
-        self.transparency_slider.pack(fill=tk.X)
-        
         # Color palettes section
         palette_label = tk.Label(
             self.settings_frame,
@@ -606,11 +430,11 @@ class SpotifyWidget:
         palettes_frame = tk.Frame(self.settings_frame, bg=self.secondary_bg)
         palettes_frame.pack(fill=tk.X, padx=15, pady=(0, 8))
         
-        palette_names = ["dark", "purple", "blue", "pink", "teal"]
+        palette_names = ["cozy_earth", "moonlit_ocean", "sunny_peach", "fiery_arctic"]
         for palette_name in palette_names:
             palette_btn = tk.Button(
                 palettes_frame,
-                text=palette_name.capitalize(),
+                text=self.PALETTES[palette_name]["name"],
                 font=("Segoe UI", 7),
                 bg=self.accent_color if palette_name == self.current_palette else self.tertiary_bg,
                 fg=self.bg_color if palette_name == self.current_palette else self.fg_color,
@@ -665,13 +489,9 @@ class SpotifyWidget:
         self.save_settings()
         self.update_control_states()
 
-    def change_transparency(self, value):
-        """Change widget transparency"""
-        self.transparency = int(value)
-        self.apply_transparency()
-
     def change_palette(self, palette_name):
         """Change color palette"""
+        reopen_settings = self.settings_open
         self.current_palette = palette_name
         self.setup_styles()
         
@@ -681,15 +501,14 @@ class SpotifyWidget:
         
         self.root.configure(bg=self.panel_bg)
         self.create_ui()
-        
-        # Reopen settings
-        self.open_settings()
-        
-        # Reload data with new colors
+
         if self.artists_data:
             self.display_artists()
         if self.tracks_data:
             self.display_songs()
+
+        if reopen_settings:
+            self.open_settings()
 
     def setup_drag(self):
         """Setup window dragging"""
@@ -779,6 +598,7 @@ class SpotifyWidget:
     def display_artists(self):
         """Display artists in tab"""
         # Clear
+        self.item_images = []
         for widget in self.artists_content.winfo_children():
             widget.destroy()
         
@@ -794,6 +614,7 @@ class SpotifyWidget:
     def display_songs(self):
         """Display songs in tab"""
         # Clear
+        self.item_images = []
         for widget in self.songs_content.winfo_children():
             widget.destroy()
         
@@ -805,6 +626,32 @@ class SpotifyWidget:
         
         self.songs_content.update_idletasks()
         self.songs_canvas.config(scrollregion=self.songs_canvas.bbox("all"))
+
+    def load_item_image(self, image_url, size=38):
+        """Load and cache Spotify artist/album images for live data rows."""
+        if not image_url:
+            return None
+
+        cache_key = (image_url, size)
+        if cache_key in self.image_cache:
+            return self.image_cache[cache_key]
+
+        try:
+            response = requests.get(image_url, timeout=5)
+            response.raise_for_status()
+            image = Image.open(BytesIO(response.content)).convert("RGB")
+            image.thumbnail((size, size), Image.LANCZOS)
+
+            square = Image.new("RGB", (size, size), self.tertiary_bg)
+            offset = ((size - image.width) // 2, (size - image.height) // 2)
+            square.paste(image, offset)
+
+            photo = ImageTk.PhotoImage(square)
+            self.image_cache[cache_key] = photo
+            return photo
+        except Exception as e:
+            print(f"Image load error: {e}")
+            return None
 
     def create_artist_item(self, rank, artist):
         """Create artist item"""
@@ -823,6 +670,17 @@ class SpotifyWidget:
             height=1
         )
         rank_label.pack(side=tk.LEFT, padx=5, pady=5)
+
+        artist_image = self.load_item_image(artist.get("image"))
+        if artist_image:
+            image_label = tk.Label(
+                item_frame,
+                image=artist_image,
+                bg=self.tertiary_bg,
+                borderwidth=0
+            )
+            image_label.pack(side=tk.LEFT, padx=(0, 6), pady=5)
+            self.item_images.append(artist_image)
         
         # Info
         info_frame = tk.Frame(item_frame, bg=self.tertiary_bg)
@@ -856,6 +714,17 @@ class SpotifyWidget:
             height=1
         )
         rank_label.pack(side=tk.LEFT, padx=5, pady=5)
+
+        album_image = self.load_item_image(track.get("image"))
+        if album_image:
+            image_label = tk.Label(
+                item_frame,
+                image=album_image,
+                bg=self.tertiary_bg,
+                borderwidth=0
+            )
+            image_label.pack(side=tk.LEFT, padx=(0, 6), pady=5)
+            self.item_images.append(album_image)
         
         # Info
         info_frame = tk.Frame(item_frame, bg=self.tertiary_bg)
@@ -889,17 +758,15 @@ class SpotifyWidget:
         self.update_control_states()
         
         # Switch canvas visibility
-        for canvas, content, scroll in self.canvases.values():
+        for canvas, content in self.canvases.values():
             canvas.pack_forget()
-            scroll.pack_forget()
         
         if self.current_tab == "artists":
-            canvas, content, scroll = self.canvases["artists"]
+            canvas, content = self.canvases["artists"]
         else:
-            canvas, content, scroll = self.canvases["songs"]
+            canvas, content = self.canvases["songs"]
         
         canvas.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
 
 def main():
