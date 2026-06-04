@@ -100,11 +100,11 @@ class SpotifyWidget:
     def __init__(self, root):
         self.root = root
         self.root.title("Spotify Widget")
-        self.widget_width = 360
-        self.widget_height = 360
+        self.widget_width = 390
+        self.widget_height = 390
         self.visible_rows = 5
-        self.row_height = 60
-        self.control_height = 60
+        self.row_height = 58
+        self.control_height = 58
         self.content_height = self.widget_height - self.control_height
         self.root.geometry(f"{self.widget_width}x{self.widget_height}")
         self.root.resizable(False, False)
@@ -331,7 +331,8 @@ class SpotifyWidget:
             self.content_frame,
             bg=self.tertiary_bg,
             highlightthickness=0,
-            borderwidth=0
+            borderwidth=0,
+            relief="flat"
         )
         self.artists_canvas.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
 
@@ -342,7 +343,8 @@ class SpotifyWidget:
             self.content_frame,
             bg=self.tertiary_bg,
             highlightthickness=0,
-            borderwidth=0
+            borderwidth=0,
+            relief="flat"
         )
 
         self.songs_content = tk.Frame(self.songs_canvas, bg=self.tertiary_bg)
