@@ -60,6 +60,43 @@ class SpotifyWidget:
         }
     }
 
+    # Demo data
+    DEMO_ARTISTS = [
+        {"name": "The Weeknd", "genres": "synth-pop, pop", "popularity": 92, "url": "#"},
+        {"name": "Drake", "genres": "hip-hop, rap", "popularity": 88, "url": "#"},
+        {"name": "Taylor Swift", "genres": "pop, country", "popularity": 95, "url": "#"},
+        {"name": "Ariana Grande", "genres": "pop, r&b", "popularity": 90, "url": "#"},
+        {"name": "Post Malone", "genres": "trap, hip-hop", "popularity": 85, "url": "#"},
+        {"name": "Billie Eilish", "genres": "alternative, indie", "popularity": 88, "url": "#"},
+        {"name": "Bad Bunny", "genres": "reggaeton, trap latino", "popularity": 92, "url": "#"},
+        {"name": "Harry Styles", "genres": "pop, rock", "popularity": 86, "url": "#"},
+        {"name": "Dua Lipa", "genres": "pop, dance", "popularity": 87, "url": "#"},
+        {"name": "The Chainsmokers", "genres": "electronic, pop", "popularity": 80, "url": "#"},
+        {"name": "Shawn Mendes", "genres": "pop, pop-rock", "popularity": 82, "url": "#"},
+        {"name": "Khalid", "genres": "r&b, pop", "popularity": 79, "url": "#"},
+        {"name": "Camila Cabello", "genres": "pop, latin", "popularity": 81, "url": "#"},
+        {"name": "Alan Walker", "genres": "electronic, edm", "popularity": 75, "url": "#"},
+        {"name": "Logic", "genres": "hip-hop, rap", "popularity": 77, "url": "#"},
+    ]
+
+    DEMO_TRACKS = [
+        {"name": "Blinding Lights", "artist": "The Weeknd", "album": "After Hours", "popularity": 94, "url": "#", "duration_ms": 200040},
+        {"name": "One Dance", "artist": "Drake ft. Wizkid & Kyla", "album": "Views", "popularity": 91, "url": "#", "duration_ms": 173293},
+        {"name": "Levitating", "artist": "Dua Lipa ft. DaBaby", "album": "Future Nostalgia", "popularity": 93, "url": "#", "duration_ms": 203429},
+        {"name": "Shape of You", "artist": "Ed Sheeran", "album": "÷", "popularity": 95, "url": "#", "duration_ms": 233613},
+        {"name": "Peaches", "artist": "Justin Bieber ft. Daniel Caesar", "album": "Justice", "popularity": 89, "url": "#", "duration_ms": 198973},
+        {"name": "Anti-Hero", "artist": "Taylor Swift", "album": "Midnights", "popularity": 96, "url": "#", "duration_ms": 229080},
+        {"name": "As It Was", "artist": "Harry Styles", "album": "Harry's House", "popularity": 92, "url": "#", "duration_ms": 169213},
+        {"name": "Heat Waves", "artist": "Glass Animals", "album": "Dreamland", "popularity": 88, "url": "#", "duration_ms": 239426},
+        {"name": "Sunroof", "artist": "Nicky Youre", "album": "Sunroof", "popularity": 87, "url": "#", "duration_ms": 180160},
+        {"name": "Running Up That Hill", "artist": "Kate Bush", "album": "Stranger Things Vol. 1", "popularity": 90, "url": "#", "duration_ms": 326400},
+        {"name": "Flowers", "artist": "Miley Cyrus", "album": "Endless Summer Vacation", "popularity": 91, "url": "#", "duration_ms": 200040},
+        {"name": "Industry Baby", "artist": "Lil Nas X & Jack Harlow", "album": "Montero", "popularity": 85, "url": "#", "duration_ms": 218973},
+        {"name": "Vampire", "artist": "Olivia Rodrigo", "album": "GUTS", "popularity": 84, "url": "#", "duration_ms": 243080},
+        {"name": "Dance the Night", "artist": "Dua Lipa", "album": "Barbie The Album", "popularity": 89, "url": "#", "duration_ms": 191160},
+        {"name": "Cruel Summer", "artist": "Taylor Swift", "album": "Lover", "popularity": 92, "url": "#", "duration_ms": 169293},
+    ]
+
     def __init__(self, root):
         self.root = root
         self.root.title("Spotify Widget")
@@ -88,6 +125,7 @@ class SpotifyWidget:
         self.artists_data = []
         self.tracks_data = []
         self.settings_open = False
+        self.demo_mode = False
         
         # Configure styles
         self.setup_styles()
@@ -412,6 +450,16 @@ class SpotifyWidget:
             )
             palette_btn.pack(side=tk.LEFT, padx=2, expand=True, fill=tk.X)
         
+        # Demo mode info
+        demo_label = tk.Label(
+            self.settings_frame,
+            text=f"Mode: {'DEMO' if self.demo_mode else 'Live'}",
+            font=("Segoe UI", 7),
+            bg=self.secondary_bg,
+            fg=self.accent_color if self.demo_mode else self.text_secondary
+        )
+        demo_label.pack(pady=(8, 0))
+        
         # Close button
         close_btn = tk.Button(
             self.settings_frame,
@@ -425,7 +473,7 @@ class SpotifyWidget:
             padx=20,
             pady=6
         )
-        close_btn.pack(pady=10)
+        close_btn.pack(pady=6)
 
     def close_settings(self):
         """Close settings panel"""
@@ -516,6 +564,17 @@ class SpotifyWidget:
             self.load_data()
         except Exception as e:
             print(f"Auth error: {e}")
+            # Fallback to demo mode
+            self.enable_demo_mode()
+
+    def enable_demo_mode(self):
+        """Enable demo mode with fake data"""
+        self.demo_mode = True
+        self.artists_data = self.DEMO_ARTISTS
+        self.tracks_data = self.DEMO_TRACKS
+        self.root.after(0, self.display_artists)
+        self.root.after(0, self.display_songs)
+        print("Demo mode enabled - showing sample data")
 
     def change_time_range(self, time_code):
         """Change time range and reload data"""
@@ -528,7 +587,8 @@ class SpotifyWidget:
             else:
                 btn.config(bg=self.tertiary_bg, fg=self.fg_color)
         
-        self.load_data()
+        if not self.demo_mode:
+            self.load_data()
 
     def load_data(self):
         """Load top artists and tracks"""
@@ -544,6 +604,10 @@ class SpotifyWidget:
             artists = self.sp_api.get_top_artists(self.current_time_range, limit=15)
             tracks = self.sp_api.get_top_tracks(self.current_time_range, limit=15)
             
+            if not artists or not tracks:
+                self.enable_demo_mode()
+                return
+            
             self.artists_data = artists
             self.tracks_data = tracks
             
@@ -551,6 +615,7 @@ class SpotifyWidget:
             self.root.after(0, self.display_songs)
         except Exception as e:
             print(f"Data load error: {e}")
+            self.enable_demo_mode()
         finally:
             self.loading = False
 
