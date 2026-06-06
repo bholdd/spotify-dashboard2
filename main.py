@@ -17,7 +17,7 @@ from spotify_auth import SpotifyAuthenticator
 from spotify_api import SpotifyAPI
 
 
-# ─── Retro font ───────────────────────────────────────────────────────────[...]
+# ─── Retro font ─────────────────────────────────────────────────────────────
 FONT = "Courier New"
 
 
@@ -75,7 +75,7 @@ class SpotifyWidget:
         },
     }
 
-    # ── Demo data ───────────────────────────────────────────────────────────[...]
+    # ── Demo data ─────────────────────────────────────────────────────────────
     DEMO_ARTISTS = [
         {"name": "The Weeknd",       "genres": "synth-pop, pop",          "popularity": 92, "url": "https://open.spotify.com/artist/1Xyo4u8uIGMw73CxIaXvj"},
         {"name": "Drake",             "genres": "hip-hop, rap",            "popularity": 88, "url": "https://open.spotify.com/artist/7dGJo4pcD2V6oG8kP0tJt"},
@@ -95,24 +95,24 @@ class SpotifyWidget:
     ]
 
     DEMO_TRACKS = [
-        {"name": "Blinding Lights",      "artist": "The Weeknd",                    "album": "After Hours",               "popularity": 94, "url": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMwbkuri", "artist_url": "https://open.spotify.com/artist/1Xyo4u8uIGMw73CxIaXvj"},
-        {"name": "One Dance",            "artist": "Drake ft. Wizkid & Kyla",       "album": "Views",                     "popularity": 91, "url": "https://open.spotify.com/track/1301WleyT98MSxVHPZCA6M", "artist_url": "https://open.spotify.com/artist/7dGJo4pcD2V6oG8kP0tJt"},
-        {"name": "Levitating",           "artist": "Dua Lipa ft. DaBaby",           "album": "Future Nostalgia",          "popularity": 93, "url": "https://open.spotify.com/track/0dGsSpZcaIiOUieKByO5UZ", "artist_url": "https://open.spotify.com/artist/6HvZYsbFfjnjFrWF950C9m"},
-        {"name": "Shape of You",         "artist": "Ed Sheeran",                    "album": "÷",                         "popularity": 95, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvNEJlbjX", "artist_url": "https://open.spotify.com/artist/6eUKZXaKkcviH0Ku9w2n3V"},
-        {"name": "Peaches",              "artist": "Justin Bieber ft. Daniel Caesar","album": "Justice",                  "popularity": 89, "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqLv", "artist_url": "https://open.spotify.com/artist/1Xyt0UVH7Nm7CGrPGA536P"},
-        {"name": "Anti-Hero",            "artist": "Taylor Swift",                  "album": "Midnights",                 "popularity": 96, "url": "https://open.spotify.com/track/0V3dsPmy4NqIUZSpUaIHK7", "artist_url": "https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf94"},
-        {"name": "As It Was",            "artist": "Harry Styles",                  "album": "Harry's House",             "popularity": 92, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvNEJlbjX", "artist_url": "https://open.spotify.com/artist/6deJKheGRHoExMgJeffo01"},
-        {"name": "Heat Waves",           "artist": "Glass Animals",                 "album": "Dreamland",                 "popularity": 88, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHVp", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
-        {"name": "Sunroof",              "artist": "Nicky Youre",                   "album": "Sunroof",                   "popularity": 87, "url": "https://open.spotify.com/track/4rVrcmK72nG8eQ5BoHSkLf", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
-        {"name": "Running Up That Hill", "artist": "Kate Bush",                     "album": "Stranger Things Vol. 1",    "popularity": 90, "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqL", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
-        {"name": "Flowers",             "artist": "Miley Cyrus",                   "album": "Endless Summer Vacation",   "popularity": 91, "url": "https://open.spotify.com/track/4rVrcmK72nG8eQ5BoHSk", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
-        {"name": "Industry Baby",        "artist": "Lil Nas X & Jack Harlow",       "album": "Montero",                   "popularity": 85, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHV", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
-        {"name": "Vampire",              "artist": "Olivia Rodrigo",                "album": "GUTS",                      "popularity": 84, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHV", "artist_url": "https://open.spotify.com/artist/1mYsTxnqsietFxj1OkzoJP"},
-        {"name": "Dance the Night",      "artist": "Dua Lipa",                      "album": "Barbie The Album",          "popularity": 89, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHV", "artist_url": "https://open.spotify.com/artist/6HvZYsbFfjnjFrWF950C9m"},
-        {"name": "Cruel Summer",         "artist": "Taylor Swift",                  "album": "Lover",                     "popularity": 92, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvNEJlbj", "artist_url": "https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf94"},
+        {"name": "Blinding Lights",      "artist": "The Weeknd",                    "album": "After Hours",               "popularity": 94, "url": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXo"},
+        {"name": "One Dance",            "artist": "Drake ft. Wizkid & Kyla",       "album": "Views",                     "popularity": 91, "url": "https://open.spotify.com/track/1301WleyT98MSxVHP"},
+        {"name": "Levitating",           "artist": "Dua Lipa ft. DaBaby",           "album": "Future Nostalgia",          "popularity": 93, "url": "https://open.spotify.com/track/0dGsSpZcaIiOUieK"},
+        {"name": "Shape of You",         "artist": "Ed Sheeran",                    "album": "÷",                         "popularity": 95, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvN"},
+        {"name": "Peaches",              "artist": "Justin Bieber ft. Daniel Caesar","album": "Justice",                  "popularity": 89, "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3P"},
+        {"name": "Anti-Hero",            "artist": "Taylor Swift",                  "album": "Midnights",                 "popularity": 96, "url": "https://open.spotify.com/track/0V3dsPmy4NqIUZSp"},
+        {"name": "As It Was",            "artist": "Harry Styles",                  "album": "Harry's House",             "popularity": 92, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvN"},
+        {"name": "Heat Waves",           "artist": "Glass Animals",                 "album": "Dreamland",                 "popularity": 88, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3R"},
+        {"name": "Sunroof",              "artist": "Nicky Youre",                   "album": "Sunroof",                   "popularity": 87, "url": "https://open.spotify.com/track/4rVrcmK72nG8eQ5B"},
+        {"name": "Running Up That Hill", "artist": "Kate Bush",                     "album": "Stranger Things Vol. 1",    "popularity": 90, "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3P"},
+        {"name": "Flowers",             "artist": "Miley Cyrus",                   "album": "Endless Summer Vacation",   "popularity": 91, "url": "https://open.spotify.com/track/4rVrcmK72nG8eQ5Bo"},
+        {"name": "Industry Baby",        "artist": "Lil Nas X & Jack Harlow",       "album": "Montero",                   "popularity": 85, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3R"},
+        {"name": "Vampire",              "artist": "Olivia Rodrigo",                "album": "GUTS",                      "popularity": 84, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3R"},
+        {"name": "Dance the Night",      "artist": "Dua Lipa",                      "album": "Barbie The Album",          "popularity": 89, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3R"},
+        {"name": "Cruel Summer",         "artist": "Taylor Swift",                  "album": "Lover",                     "popularity": 92, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvN"},
     ]
 
-    # ── Helpers ──────────────────────────────────────────────────────────[...]
+    # ── Helpers ──────────────────────────────────────────────────────────────
 
     @staticmethod
     def _contrast_fg(hex_color: str) -> str:
@@ -124,7 +124,47 @@ class SpotifyWidget:
         luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
         return "#000000" if luminance > 0.5 else "#FFFFFF"
 
-    # ── Init ───────────────────────────────────────────────────────────[...]
+    @staticmethod
+    def _apply_fisheye(image: Image.Image, strength: float = 0.15) -> Image.Image:
+        """Apply a subtle fisheye distortion effect to an image."""
+        width, height = image.size
+        
+        # Create a distortion map for fisheye effect
+        # Maps center outward with barrel distortion
+        x_center = width / 2
+        y_center = height / 2
+        max_dist = ((width / 2) ** 2 + (height / 2) ** 2) ** 0.5
+        
+        # Create output image
+        output = Image.new(image.mode, (width, height))
+        pixels = output.load()
+        source_pixels = image.load()
+        
+        for y in range(height):
+            for x in range(width):
+                # Normalize coordinates to -1 to 1
+                nx = (x - x_center) / (width / 2)
+                ny = (y - y_center) / (height / 2)
+                
+                # Calculate distance from center
+                dist = (nx ** 2 + ny ** 2) ** 0.5
+                
+                # Apply fisheye distortion (barrel effect)
+                factor = 1.0 + strength * (dist ** 2)
+                
+                # Map back to source image coordinates
+                src_x = int(x_center + nx * factor * (width / 2))
+                src_y = int(y_center + ny * factor * (height / 2))
+                
+                # Clamp to image bounds
+                src_x = max(0, min(width - 1, src_x))
+                src_y = max(0, min(height - 1, src_y))
+                
+                pixels[x, y] = source_pixels[src_x, src_y]
+        
+        return output
+
+    # ── Init ───────────────────────────────────────────────────────────────
 
     def __init__(self, root):
         self.root = root
@@ -150,11 +190,13 @@ class SpotifyWidget:
         self.demo_mode     = False
         self.image_cache   = {}
         self.item_images   = []
+        self.fisheye_enabled = True
 
         # Settings
         self.config_file = "widget_config.json"
         self.settings    = self.load_settings()
         self.current_palette = self.settings.get("palette", "terminal")
+        self.fisheye_enabled = self.settings.get("fisheye", True)
         if self.current_palette not in self.PALETTES:
             self.current_palette = "terminal"
 
@@ -191,7 +233,7 @@ class SpotifyWidget:
     # ── Settings persistence ──────────────────────────────────────────────────
 
     def load_settings(self):
-        defaults = {"palette": "terminal", "x": None, "y": None}
+        defaults = {"palette": "terminal", "x": None, "y": None, "fisheye": True}
         if os.path.exists(self.config_file):
             try:
                 with open(self.config_file) as f:
@@ -202,6 +244,7 @@ class SpotifyWidget:
 
     def save_settings(self):
         self.settings["palette"] = self.current_palette
+        self.settings["fisheye"] = self.fisheye_enabled
         self.settings["x"] = self.root.winfo_x()
         self.settings["y"] = self.root.winfo_y()
         with open(self.config_file, "w") as f:
@@ -216,7 +259,7 @@ class SpotifyWidget:
         y  = sh - self.widget_height - 64
         self.root.geometry(f"{self.widget_width}x{self.widget_height}+{x}+{y}")
 
-    # ── Theme ────────────────────────────────────────────────────────────[...]
+    # ── Theme ──────────────────────────────────────────────────────────────
 
     def setup_styles(self):
         p = self.PALETTES[self.current_palette]
@@ -256,6 +299,11 @@ class SpotifyWidget:
             self.display_songs()
         if reopen:
             self.open_settings()
+
+    def toggle_fisheye(self):
+        self.fisheye_enabled = not self.fisheye_enabled
+        self.display_artists()
+        self.display_songs()
 
     # ── UI construction ───────────────────────────────────────────────────────
 
@@ -397,7 +445,7 @@ class SpotifyWidget:
                 )
         canvas.tag_lower("checker")
 
-    # ── Settings panel ─────────────────────────────────────────────────────────[...]
+    # ── Settings panel ───────────────────────────────────────────────────────
 
     def toggle_settings(self):
         if self.settings_open:
@@ -419,7 +467,7 @@ class SpotifyWidget:
             w.destroy()
         self.settings_frame.pack(fill=tk.BOTH, expand=True)
 
-        # ── Title ─────────────────────────────────────────────────────────[...]
+        # ── Title ─────────────────────────────────────────────────────────
         tk.Label(
             self.settings_frame,
             text="[ SETTINGS ]",
@@ -464,6 +512,38 @@ class SpotifyWidget:
                 pady=3,
                 command=lambda k=pal_key: self.change_palette(k),
             ).pack(side=tk.LEFT, padx=2, expand=True, fill=tk.X)
+
+        # ── Fisheye effect toggle ──────────────────────────────────────────
+        tk.Frame(self.settings_frame, bg=self.accent_color, height=1).pack(
+            fill=tk.X, padx=10, pady=4
+        )
+        
+        fisheye_status = "ON" if self.fisheye_enabled else "OFF"
+        fisheye_color = self.fg_color if self.fisheye_enabled else self.text_secondary
+        tk.Label(
+            self.settings_frame,
+            text=f"> FISHEYE: {fisheye_status}",
+            font=(FONT, 8),
+            bg=self.secondary_bg,
+            fg=fisheye_color,
+        ).pack(anchor=tk.W, padx=14, pady=(4, 4))
+
+        fisheye_btn_bg = self.accent_color if self.fisheye_enabled else self.tertiary_bg
+        fisheye_btn_fg = self._contrast_fg(fisheye_btn_bg)
+        tk.Button(
+            self.settings_frame,
+            text="TOGGLE FISHEYE",
+            font=(FONT, 7, "bold"),
+            bg=fisheye_btn_bg,
+            fg=fisheye_btn_fg,
+            activebackground=self.accent_color,
+            activeforeground=self._contrast_fg(self.accent_color),
+            border=1,
+            relief=tk.RAISED,
+            padx=6,
+            pady=3,
+            command=self.toggle_fisheye,
+        ).pack(padx=10, pady=(0, 10), fill=tk.X)
 
         # ── Mode indicator ─────────────────────────────────────────────────
         tk.Frame(self.settings_frame, bg=self.accent_color, height=1).pack(
@@ -524,7 +604,7 @@ class SpotifyWidget:
         if not self.demo_mode:
             self.load_data()
 
-    # ── Drag ───────────────────────────────────────────────────────────[...]
+    # ── Drag ───────────────────────────────────────────────────────────────
 
     def setup_drag(self):
         self.root.bind("<Button-1>",        self.drag_start)
@@ -590,7 +670,7 @@ class SpotifyWidget:
         finally:
             self.loading = False
 
-    # ── Display ──────────────────────────────────────────────────────────[...]
+    # ── Display ──────────────────────────────────────────────────────────────
 
     def display_artists(self):
         self.item_images = []
@@ -623,7 +703,7 @@ class SpotifyWidget:
     def load_item_image(self, image_url, size=38):
         if not image_url:
             return None
-        key = (image_url, size)
+        key = (image_url, size, self.fisheye_enabled)
         if key in self.image_cache:
             return self.image_cache[key]
         try:
@@ -633,6 +713,11 @@ class SpotifyWidget:
             img.thumbnail((size, size), Image.LANCZOS)
             square = Image.new("RGB", (size, size), self.tertiary_bg)
             square.paste(img, ((size - img.width) // 2, (size - img.height) // 2))
+            
+            # Apply fisheye effect if enabled
+            if self.fisheye_enabled:
+                square = self._apply_fisheye(square, strength=0.12)
+            
             photo = ImageTk.PhotoImage(square)
             self.image_cache[key] = photo
             return photo
@@ -640,7 +725,7 @@ class SpotifyWidget:
             print(f"Image load error: {e}")
             return None
 
-    # ── Row builders ────────────────────────────────────────────────────────[...]
+    # ── Row builders ────────────────────────────────────────────────────────
 
     def _row_bg(self, idx: int) -> str:
         """Alternate slightly between two row shades for a retro scanline feel."""
@@ -813,7 +898,7 @@ class SpotifyWidget:
             )
 
 
-# ── Entry point ──────────────────────────────────────────────────────────[...]
+# ── Entry point ──────────────────────────────────────────────────────────
 
 def main():
     root = tk.Tk()
