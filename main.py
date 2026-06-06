@@ -8,6 +8,7 @@ import threading
 import json
 import os
 import sys
+import webbrowser
 from io import BytesIO
 
 import requests
@@ -76,39 +77,39 @@ class SpotifyWidget:
 
     # ── Demo data ───────────────────────────────────────────────────────────[...]
     DEMO_ARTISTS = [
-        {"name": "The Weeknd",       "genres": "synth-pop, pop",          "popularity": 92, "url": "#"},
-        {"name": "Drake",             "genres": "hip-hop, rap",            "popularity": 88, "url": "#"},
-        {"name": "Taylor Swift",      "genres": "pop, country",            "popularity": 95, "url": "#"},
-        {"name": "Ariana Grande",     "genres": "pop, r&b",                "popularity": 90, "url": "#"},
-        {"name": "Post Malone",       "genres": "trap, hip-hop",           "popularity": 85, "url": "#"},
-        {"name": "Billie Eilish",     "genres": "alternative, indie",      "popularity": 88, "url": "#"},
-        {"name": "Bad Bunny",         "genres": "reggaeton, trap latino",   "popularity": 92, "url": "#"},
-        {"name": "Harry Styles",      "genres": "pop, rock",               "popularity": 86, "url": "#"},
-        {"name": "Dua Lipa",          "genres": "pop, dance",              "popularity": 87, "url": "#"},
-        {"name": "The Chainsmokers",  "genres": "electronic, pop",         "popularity": 80, "url": "#"},
-        {"name": "Shawn Mendes",      "genres": "pop, pop-rock",           "popularity": 82, "url": "#"},
-        {"name": "Khalid",            "genres": "r&b, pop",                "popularity": 79, "url": "#"},
-        {"name": "Camila Cabello",    "genres": "pop, latin",              "popularity": 81, "url": "#"},
-        {"name": "Alan Walker",       "genres": "electronic, edm",         "popularity": 75, "url": "#"},
-        {"name": "Logic",             "genres": "hip-hop, rap",            "popularity": 77, "url": "#"},
+        {"name": "The Weeknd",       "genres": "synth-pop, pop",          "popularity": 92, "url": "https://open.spotify.com/artist/1Xyo4u8uIGMw73CxIaXvj"},
+        {"name": "Drake",             "genres": "hip-hop, rap",            "popularity": 88, "url": "https://open.spotify.com/artist/7dGJo4pcD2V6oG8kP0tJt"},
+        {"name": "Taylor Swift",      "genres": "pop, country",            "popularity": 95, "url": "https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf94"},
+        {"name": "Ariana Grande",     "genres": "pop, r&b",                "popularity": 90, "url": "https://open.spotify.com/artist/66CXWjxzNUsdJxJ2JdwvnR"},
+        {"name": "Post Malone",       "genres": "trap, hip-hop",           "popularity": 85, "url": "https://open.spotify.com/artist/PostMalone"},
+        {"name": "Billie Eilish",     "genres": "alternative, indie",      "popularity": 88, "url": "https://open.spotify.com/artist/6qqNVTkY8uBU9cUvJSo"},
+        {"name": "Bad Bunny",         "genres": "reggaeton, trap latino",   "popularity": 92, "url": "https://open.spotify.com/artist/BadBunny"},
+        {"name": "Harry Styles",      "genres": "pop, rock",               "popularity": 86, "url": "https://open.spotify.com/artist/6deJKheGRHoExMgJeffo01"},
+        {"name": "Dua Lipa",          "genres": "pop, dance",              "popularity": 87, "url": "https://open.spotify.com/artist/6HvZYsbFfjnjFrWF950C9m"},
+        {"name": "The Chainsmokers",  "genres": "electronic, pop",         "popularity": 80, "url": "https://open.spotify.com/artist/69GGBxA162lQ3FqAJtBjBC"},
+        {"name": "Shawn Mendes",      "genres": "pop, pop-rock",           "popularity": 82, "url": "https://open.spotify.com/artist/7n2wHs1TKAczGzO7Dd0qKw"},
+        {"name": "Khalid",            "genres": "r&b, pop",                "popularity": 79, "url": "https://open.spotify.com/artist/6LuymHvsWaNTap0EYna"},
+        {"name": "Camila Cabello",    "genres": "pop, latin",              "popularity": 81, "url": "https://open.spotify.com/artist/4nDoRrQiYLoBzwC5BhVG0k"},
+        {"name": "Alan Walker",       "genres": "electronic, edm",         "popularity": 75, "url": "https://open.spotify.com/artist/7vk4XtFDUKqiaeIWHRSkHt"},
+        {"name": "Logic",             "genres": "hip-hop, rap",            "popularity": 77, "url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga7"},
     ]
 
     DEMO_TRACKS = [
-        {"name": "Blinding Lights",      "artist": "The Weeknd",                    "album": "After Hours",               "popularity": 94, "url": "#", "duration_ms": 200040},
-        {"name": "One Dance",            "artist": "Drake ft. Wizkid & Kyla",       "album": "Views",                     "popularity": 91, "url": "#", "duration_ms": 173293},
-        {"name": "Levitating",           "artist": "Dua Lipa ft. DaBaby",           "album": "Future Nostalgia",          "popularity": 93, "url": "#", "duration_ms": 203429},
-        {"name": "Shape of You",         "artist": "Ed Sheeran",                    "album": "÷",                         "popularity": 95, "url": "#", "duration_ms": 233613},
-        {"name": "Peaches",              "artist": "Justin Bieber ft. Daniel Caesar","album": "Justice",                  "popularity": 89, "url": "#", "duration_ms": 198973},
-        {"name": "Anti-Hero",            "artist": "Taylor Swift",                  "album": "Midnights",                 "popularity": 96, "url": "#", "duration_ms": 229080},
-        {"name": "As It Was",            "artist": "Harry Styles",                  "album": "Harry's House",             "popularity": 92, "url": "#", "duration_ms": 169213},
-        {"name": "Heat Waves",           "artist": "Glass Animals",                 "album": "Dreamland",                 "popularity": 88, "url": "#", "duration_ms": 239426},
-        {"name": "Sunroof",              "artist": "Nicky Youre",                   "album": "Sunroof",                   "popularity": 87, "url": "#", "duration_ms": 180160},
-        {"name": "Running Up That Hill", "artist": "Kate Bush",                     "album": "Stranger Things Vol. 1",    "popularity": 90, "url": "#", "duration_ms": 326400},
-        {"name": "Flowers",             "artist": "Miley Cyrus",                   "album": "Endless Summer Vacation",   "popularity": 91, "url": "#", "duration_ms": 200040},
-        {"name": "Industry Baby",        "artist": "Lil Nas X & Jack Harlow",       "album": "Montero",                   "popularity": 85, "url": "#", "duration_ms": 218973},
-        {"name": "Vampire",              "artist": "Olivia Rodrigo",                "album": "GUTS",                      "popularity": 84, "url": "#", "duration_ms": 243080},
-        {"name": "Dance the Night",      "artist": "Dua Lipa",                      "album": "Barbie The Album",          "popularity": 89, "url": "#", "duration_ms": 191160},
-        {"name": "Cruel Summer",         "artist": "Taylor Swift",                  "album": "Lover",                     "popularity": 92, "url": "#", "duration_ms": 169293},
+        {"name": "Blinding Lights",      "artist": "The Weeknd",                    "album": "After Hours",               "popularity": 94, "url": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMwbkuri", "artist_url": "https://open.spotify.com/artist/1Xyo4u8uIGMw73CxIaXvj"},
+        {"name": "One Dance",            "artist": "Drake ft. Wizkid & Kyla",       "album": "Views",                     "popularity": 91, "url": "https://open.spotify.com/track/1301WleyT98MSxVHPZCA6M", "artist_url": "https://open.spotify.com/artist/7dGJo4pcD2V6oG8kP0tJt"},
+        {"name": "Levitating",           "artist": "Dua Lipa ft. DaBaby",           "album": "Future Nostalgia",          "popularity": 93, "url": "https://open.spotify.com/track/0dGsSpZcaIiOUieKByO5UZ", "artist_url": "https://open.spotify.com/artist/6HvZYsbFfjnjFrWF950C9m"},
+        {"name": "Shape of You",         "artist": "Ed Sheeran",                    "album": "÷",                         "popularity": 95, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvNEJlbjX", "artist_url": "https://open.spotify.com/artist/6eUKZXaKkcviH0Ku9w2n3V"},
+        {"name": "Peaches",              "artist": "Justin Bieber ft. Daniel Caesar","album": "Justice",                  "popularity": 89, "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqLv", "artist_url": "https://open.spotify.com/artist/1Xyt0UVH7Nm7CGrPGA536P"},
+        {"name": "Anti-Hero",            "artist": "Taylor Swift",                  "album": "Midnights",                 "popularity": 96, "url": "https://open.spotify.com/track/0V3dsPmy4NqIUZSpUaIHK7", "artist_url": "https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf94"},
+        {"name": "As It Was",            "artist": "Harry Styles",                  "album": "Harry's House",             "popularity": 92, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvNEJlbjX", "artist_url": "https://open.spotify.com/artist/6deJKheGRHoExMgJeffo01"},
+        {"name": "Heat Waves",           "artist": "Glass Animals",                 "album": "Dreamland",                 "popularity": 88, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHVp", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
+        {"name": "Sunroof",              "artist": "Nicky Youre",                   "album": "Sunroof",                   "popularity": 87, "url": "https://open.spotify.com/track/4rVrcmK72nG8eQ5BoHSkLf", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
+        {"name": "Running Up That Hill", "artist": "Kate Bush",                     "album": "Stranger Things Vol. 1",    "popularity": 90, "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqL", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
+        {"name": "Flowers",             "artist": "Miley Cyrus",                   "album": "Endless Summer Vacation",   "popularity": 91, "url": "https://open.spotify.com/track/4rVrcmK72nG8eQ5BoHSk", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
+        {"name": "Industry Baby",        "artist": "Lil Nas X & Jack Harlow",       "album": "Montero",                   "popularity": 85, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHV", "artist_url": "https://open.spotify.com/artist/5nCnpMS0Uixt4PSoCMTga"},
+        {"name": "Vampire",              "artist": "Olivia Rodrigo",                "album": "GUTS",                      "popularity": 84, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHV", "artist_url": "https://open.spotify.com/artist/1mYsTxnqsietFxj1OkzoJP"},
+        {"name": "Dance the Night",      "artist": "Dua Lipa",                      "album": "Barbie The Album",          "popularity": 89, "url": "https://open.spotify.com/track/2takcwFXGpVSXi3RCnBHV", "artist_url": "https://open.spotify.com/artist/6HvZYsbFfjnjFrWF950C9m"},
+        {"name": "Cruel Summer",         "artist": "Taylor Swift",                  "album": "Lover",                     "popularity": 92, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvNEJlbj", "artist_url": "https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf94"},
     ]
 
     # ── Helpers ──────────────────────────────────────────────────────────[...]
@@ -680,7 +681,9 @@ class SpotifyWidget:
         info = tk.Frame(frame, bg=row_bg)
         info.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=6, pady=4)
 
-        tk.Label(
+        # Clickable artist name
+        artist_url = artist.get("url", "#")
+        artist_name_lbl = tk.Label(
             info,
             text=f"> {artist['name']}",
             font=(FONT, 8, "bold"),
@@ -689,7 +692,10 @@ class SpotifyWidget:
             wraplength=230,
             justify=tk.LEFT,
             anchor=tk.W,
-        ).pack(anchor=tk.W)
+            cursor="hand2",
+        )
+        artist_name_lbl.pack(anchor=tk.W)
+        artist_name_lbl.bind("<Button-1>", lambda e: webbrowser.open(artist_url) if artist_url != "#" else None)
 
         if artist.get("genres"):
             tk.Label(
@@ -743,7 +749,9 @@ class SpotifyWidget:
         info = tk.Frame(frame, bg=row_bg)
         info.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=6, pady=4)
 
-        tk.Label(
+        # Clickable song name
+        song_url = track.get("url", "#")
+        song_name_lbl = tk.Label(
             info,
             text=f"> {track['name']}",
             font=(FONT, 8, "bold"),
@@ -752,9 +760,14 @@ class SpotifyWidget:
             wraplength=220,
             justify=tk.LEFT,
             anchor=tk.W,
-        ).pack(anchor=tk.W)
+            cursor="hand2",
+        )
+        song_name_lbl.pack(anchor=tk.W)
+        song_name_lbl.bind("<Button-1>", lambda e: webbrowser.open(song_url) if song_url != "#" else None)
 
-        tk.Label(
+        # Clickable artist name
+        artist_url = track.get("artist_url", "#")
+        artist_lbl = tk.Label(
             info,
             text=track["artist"],
             font=(FONT, 6),
@@ -763,7 +776,10 @@ class SpotifyWidget:
             wraplength=240,
             justify=tk.LEFT,
             anchor=tk.W,
-        ).pack(anchor=tk.W)
+            cursor="hand2",
+        )
+        artist_lbl.pack(anchor=tk.W)
+        artist_lbl.bind("<Button-1>", lambda e: webbrowser.open(artist_url) if artist_url != "#" else None)
 
         # Pixel popularity bar
         pop = track.get("popularity", 0)
