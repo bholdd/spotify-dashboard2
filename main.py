@@ -12,7 +12,7 @@ import webbrowser
 from io import BytesIO
 
 import requests
-from PIL import Image, ImageTk
+from PIL import Image, ImageDraw, ImageTk
 from spotify_auth import SpotifyAuthenticator
 from spotify_api import SpotifyAPI
 
@@ -95,10 +95,10 @@ class SpotifyWidget:
     ]
 
     DEMO_TRACKS = [
-        {"name": "Blinding Lights",      "artist": "The Weeknd",                    "album": "After Hours",               "popularity": 94, "url": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXo"},
+        {"name": "Blinding Lights",      "artist": "The Weeknd",                    "album": "After Hours",               "popularity": 94, "url": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2v"},
         {"name": "One Dance",            "artist": "Drake ft. Wizkid & Kyla",       "album": "Views",                     "popularity": 91, "url": "https://open.spotify.com/track/1301WleyT98MSxVHP"},
         {"name": "Levitating",           "artist": "Dua Lipa ft. DaBaby",           "album": "Future Nostalgia",          "popularity": 93, "url": "https://open.spotify.com/track/0dGsSpZcaIiOUieK"},
-        {"name": "Shape of You",         "artist": "Ed Sheeran",                    "album": "÷",                         "popularity": 95, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvN"},
+        {"name": "Shape of You",         "artist": "Ed Sheeran",                    "album": "÷",                         "popularity": 95, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylv"},
         {"name": "Peaches",              "artist": "Justin Bieber ft. Daniel Caesar","album": "Justice",                  "popularity": 89, "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3P"},
         {"name": "Anti-Hero",            "artist": "Taylor Swift",                  "album": "Midnights",                 "popularity": 96, "url": "https://open.spotify.com/track/0V3dsPmy4NqIUZSp"},
         {"name": "As It Was",            "artist": "Harry Styles",                  "album": "Harry's House",             "popularity": 92, "url": "https://open.spotify.com/track/7qiZfU4dY1lsylvN"},
@@ -125,20 +125,18 @@ class SpotifyWidget:
         return "#000000" if luminance > 0.5 else "#FFFFFF"
 
     @staticmethod
-    def _apply_fisheye(image: Image.Image, strength: float = 0.15) -> Image.Image:
-        """Apply a subtle fisheye distortion effect to an image."""
+    def _apply_fisheye(image: Image.Image, strength: float = 0.25) -> Image.Image:
+        """Apply a noticeable fisheye distortion effect to an image."""
         width, height = image.size
-        
-        # Create a distortion map for fisheye effect
-        # Maps center outward with barrel distortion
-        x_center = width / 2
-        y_center = height / 2
-        max_dist = ((width / 2) ** 2 + (height / 2) ** 2) ** 0.5
         
         # Create output image
         output = Image.new(image.mode, (width, height))
         pixels = output.load()
         source_pixels = image.load()
+        
+        x_center = width / 2
+        y_center = height / 2
+        max_dist = ((width / 2) ** 2 + (height / 2) ** 2) ** 0.5
         
         for y in range(height):
             for x in range(width):
@@ -146,17 +144,18 @@ class SpotifyWidget:
                 nx = (x - x_center) / (width / 2)
                 ny = (y - y_center) / (height / 2)
                 
-                # Calculate distance from center
+                # Distance from center (0 to sqrt(2))
                 dist = (nx ** 2 + ny ** 2) ** 0.5
                 
-                # Apply fisheye distortion (barrel effect)
-                factor = 1.0 + strength * (dist ** 2)
+                # Apply stronger fisheye distortion (barrel effect)
+                # This curves the image outward from center
+                factor = 1.0 + strength * (dist ** 2.2)
                 
-                # Map back to source image coordinates
+                # Map back to source coordinates
                 src_x = int(x_center + nx * factor * (width / 2))
                 src_y = int(y_center + ny * factor * (height / 2))
                 
-                # Clamp to image bounds
+                # Clamp to bounds
                 src_x = max(0, min(width - 1, src_x))
                 src_y = max(0, min(height - 1, src_y))
                 
@@ -302,6 +301,8 @@ class SpotifyWidget:
 
     def toggle_fisheye(self):
         self.fisheye_enabled = not self.fisheye_enabled
+        # Clear cache to force re-rendering with new fisheye state
+        self.image_cache.clear()
         self.display_artists()
         self.display_songs()
 
@@ -716,7 +717,7 @@ class SpotifyWidget:
             
             # Apply fisheye effect if enabled
             if self.fisheye_enabled:
-                square = self._apply_fisheye(square, strength=0.12)
+                square = self._apply_fisheye(square, strength=0.25)
             
             photo = ImageTk.PhotoImage(square)
             self.image_cache[key] = photo
