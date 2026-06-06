@@ -601,9 +601,15 @@ class SpotifyWidget:
         for idx, artist in enumerate(self.artists_data, 1):
             self._create_artist_row(idx, artist)
         self.artists_content.update_idletasks()
-        # FIX: Limit scrollable height to exactly 15 items max
-        max_height = 15 * (self.row_height + 4)  # 15 items × (row_height + padding)
-        self.artists_canvas.config(scrollregion=(0, 0, self.widget_width, max_height))
+        # FIX: Calculate actual content height and limit scrollregion
+        content_bbox = self.artists_canvas.bbox(self.artists_content)
+        if content_bbox:
+            content_height = content_bbox[3] - content_bbox[1]
+        else:
+            content_height = self.content_height
+        # Limit to max 15 items worth of scrollable content
+        max_scroll_height = min(content_height, 15 * 62)  # 62 = row_height + padding
+        self.artists_canvas.config(scrollregion=(0, 0, self.widget_width, max_scroll_height))
 
     def display_songs(self):
         self.item_images = []
@@ -615,9 +621,15 @@ class SpotifyWidget:
         for idx, track in enumerate(self.tracks_data, 1):
             self._create_track_row(idx, track)
         self.songs_content.update_idletasks()
-        # FIX: Limit scrollable height to exactly 15 items max
-        max_height = 15 * (self.row_height + 4)  # 15 items × (row_height + padding)
-        self.songs_canvas.config(scrollregion=(0, 0, self.widget_width, max_height))
+        # FIX: Calculate actual content height and limit scrollregion
+        content_bbox = self.songs_canvas.bbox(self.songs_content)
+        if content_bbox:
+            content_height = content_bbox[3] - content_bbox[1]
+        else:
+            content_height = self.content_height
+        # Limit to max 15 items worth of scrollable content
+        max_scroll_height = min(content_height, 15 * 62)  # 62 = row_height + padding
+        self.songs_canvas.config(scrollregion=(0, 0, self.widget_width, max_scroll_height))
 
     def load_item_image(self, image_url, size=38):
         if not image_url:
