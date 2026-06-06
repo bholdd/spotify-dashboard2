@@ -16,7 +16,7 @@ from spotify_auth import SpotifyAuthenticator
 from spotify_api import SpotifyAPI
 
 
-# ─── Retro font ───────────────────────────────────────────────────────────────
+# ─── Retro font ───────────────────────────────────────────────────────────[...]
 FONT = "Courier New"
 
 
@@ -74,7 +74,7 @@ class SpotifyWidget:
         },
     }
 
-    # ── Demo data ─────────────────────────────────────────────────────────────
+    # ── Demo data ───────────────────────────────────────────────────────────[...]
     DEMO_ARTISTS = [
         {"name": "The Weeknd",       "genres": "synth-pop, pop",          "popularity": 92, "url": "#"},
         {"name": "Drake",             "genres": "hip-hop, rap",            "popularity": 88, "url": "#"},
@@ -111,7 +111,7 @@ class SpotifyWidget:
         {"name": "Cruel Summer",         "artist": "Taylor Swift",                  "album": "Lover",                     "popularity": 92, "url": "#", "duration_ms": 169293},
     ]
 
-    # ── Helpers ───────────────────────────────────────────────────────────────
+    # ── Helpers ──────────────────────────────────────────────────────────[...]
 
     @staticmethod
     def _contrast_fg(hex_color: str) -> str:
@@ -123,7 +123,7 @@ class SpotifyWidget:
         luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
         return "#000000" if luminance > 0.5 else "#FFFFFF"
 
-    # ── Init ──────────────────────────────────────────────────────────────────
+    # ── Init ───────────────────────────────────────────────────────────[...]
 
     def __init__(self, root):
         self.root = root
@@ -215,7 +215,7 @@ class SpotifyWidget:
         y  = sh - self.widget_height - 64
         self.root.geometry(f"{self.widget_width}x{self.widget_height}+{x}+{y}")
 
-    # ── Theme ─────────────────────────────────────────────────────────────────
+    # ── Theme ────────────────────────────────────────────────────────────[...]
 
     def setup_styles(self):
         p = self.PALETTES[self.current_palette]
@@ -396,7 +396,7 @@ class SpotifyWidget:
                 )
         canvas.tag_lower("checker")
 
-    # ── Settings panel ────────────────────────────────────────────────────────
+    # ── Settings panel ─────────────────────────────────────────────────────────[...]
 
     def toggle_settings(self):
         if self.settings_open:
@@ -418,7 +418,7 @@ class SpotifyWidget:
             w.destroy()
         self.settings_frame.pack(fill=tk.BOTH, expand=True)
 
-        # ── Title ──────────────────────────────────────────────────────────
+        # ── Title ─────────────────────────────────────────────────────────[...]
         tk.Label(
             self.settings_frame,
             text="[ SETTINGS ]",
@@ -523,7 +523,7 @@ class SpotifyWidget:
         if not self.demo_mode:
             self.load_data()
 
-    # ── Drag ──────────────────────────────────────────────────────────────────
+    # ── Drag ───────────────────────────────────────────────────────────[...]
 
     def setup_drag(self):
         self.root.bind("<Button-1>",        self.drag_start)
@@ -589,7 +589,7 @@ class SpotifyWidget:
         finally:
             self.loading = False
 
-    # ── Display ───────────────────────────────────────────────────────────────
+    # ── Display ──────────────────────────────────────────────────────────[...]
 
     def display_artists(self):
         self.item_images = []
@@ -601,7 +601,9 @@ class SpotifyWidget:
         for idx, artist in enumerate(self.artists_data, 1):
             self._create_artist_row(idx, artist)
         self.artists_content.update_idletasks()
-        self.artists_canvas.config(scrollregion=self.artists_canvas.bbox("all"))
+        # FIX: Limit scrollable height to exactly 15 items max
+        max_height = 15 * (self.row_height + 4)  # 15 items × (row_height + padding)
+        self.artists_canvas.config(scrollregion=(0, 0, self.widget_width, max_height))
 
     def display_songs(self):
         self.item_images = []
@@ -613,7 +615,9 @@ class SpotifyWidget:
         for idx, track in enumerate(self.tracks_data, 1):
             self._create_track_row(idx, track)
         self.songs_content.update_idletasks()
-        self.songs_canvas.config(scrollregion=self.songs_canvas.bbox("all"))
+        # FIX: Limit scrollable height to exactly 15 items max
+        max_height = 15 * (self.row_height + 4)  # 15 items × (row_height + padding)
+        self.songs_canvas.config(scrollregion=(0, 0, self.widget_width, max_height))
 
     def load_item_image(self, image_url, size=38):
         if not image_url:
@@ -635,7 +639,7 @@ class SpotifyWidget:
             print(f"Image load error: {e}")
             return None
 
-    # ── Row builders ──────────────────────────────────────────────────────────
+    # ── Row builders ────────────────────────────────────────────────────────[...]
 
     def _row_bg(self, idx: int) -> str:
         """Alternate slightly between two row shades for a retro scanline feel."""
@@ -793,7 +797,7 @@ class SpotifyWidget:
             )
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# ── Entry point ──────────────────────────────────────────────────────────[...]
 
 def main():
     root = tk.Tk()
